@@ -12,7 +12,7 @@ namespace BackgroundStreamingAudio.Services
     [IntentFilter(new[] { ActionPlay, ActionPause, ActionStop })]
     public class StreamingBackgroundService : Service, AudioManager.IOnAudioFocusChangeListener
     {
-        //Commands
+        //Actions
         public const string ActionPlay = "com.xamarin.action.PLAY";
         public const string ActionPause = "com.xamarin.action.PAUSE";
         public const string ActionStop = "com.xamarin.action.STOP";
@@ -51,21 +51,38 @@ namespace BackgroundStreamingAudio.Services
         public override StartCommandResult OnStartCommand(Intent intent, StartCommandFlags flags, int startId)
         {
 
-            switch (intent.Action)
-            {
-                case ActionPlay:
-                    Play();
-                    break;
-                case ActionStop:
-                    Stop();
-                    break;
-                case ActionPause:
-                    Pause();
-                    break;
+            switch (intent.Action) {
+                case ActionPlay: Play(); break;
+                case ActionStop: Stop(); break;
+                case ActionPause: Pause(); break;
             }
 
             //Set sticky as we are a long running operation
             return StartCommandResult.Sticky;
+        }
+
+        private void IntializePlayer()
+        {
+            player = new MediaPlayer();
+
+            //Tell our player to sream music
+            player.SetAudioStreamType(Stream.Music);
+
+            //Wake mode will be partial to keep the CPU still running under lock screen
+            player.SetWakeMode(ApplicationContext, WakeLockFlags.Partial);
+
+            //When we have prepared the song start playback
+            player.Prepared += (sender, args) => player.Start();
+
+            //When we have reached the end of the song stop ourselves, however you could signal next track here.
+            player.Completion += (sender, args) => Stop();
+
+            player.Error += (sender, args) =>
+            {
+                //playback error
+                Console.WriteLine("Error in playback resetting: " + args.What);
+                Stop();//this will clean up and reset properly.
+            };
         }
 
         private async void Play()
@@ -80,26 +97,7 @@ namespace BackgroundStreamingAudio.Services
             }
 
             if (player == null) {
-                
-                player = new MediaPlayer();
-
-                //Tell our player to sream music
-                player.SetAudioStreamType(Stream.Music);
-
-                //Wake mode will be partial to keep the CPU still running under lock screen
-                player.SetWakeMode(ApplicationContext, WakeLockFlags.Partial);
-
-                //When we have prepared the song start playback
-                player.Prepared += (sender, args) => player.Start();
-
-                //When we have reached the end of the song stop ourselves, however you could signal next track here.
-                player.Completion += (sender, args) => Stop();
-
-                player.Error += (sender, args) => {
-                    //playback error
-                    Console.WriteLine("Error in playback resetting: " + args.What);
-                    Stop();//this will clean up and reset properly.
-                };
+              IntializePlayer();
             }
 
             if (player.IsPlaying)
@@ -211,7 +209,7 @@ namespace BackgroundStreamingAudio.Services
 
         /// <summary>
         /// For a good user experience we should account for when audio focus has changed.
-        /// There is only 1 audio output ther emay be several media services trying to use it so
+        /// There is only 1 audio output there may be several media services trying to use it so
         /// we should act correctly based on this.  "duck" to be quiet and when we gain go full.
         /// All applications are encouraged to follow this, but are not enforced.
         /// </summary>
@@ -222,7 +220,7 @@ namespace BackgroundStreamingAudio.Services
             {
                 case AudioFocus.Gain:
                     if (player == null)
-                        return;
+                        IntializePlayer();
 
                     if (!player.IsPlaying)
                     {
