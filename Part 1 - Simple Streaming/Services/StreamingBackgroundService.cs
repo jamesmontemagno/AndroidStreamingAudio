@@ -1,5 +1,4 @@
-﻿using System.Runtime.InteropServices;
-using Android.App;
+﻿using Android.App;
 using System;
 using Android.Content;
 using Android.Media;
@@ -11,22 +10,22 @@ namespace BackgroundStreamingAudio.Services
 {
     [Service]
     [IntentFilter(new[] { ActionPlay, ActionPause, ActionStop })]
-    public class StreamingBackgroundService : Service
+    public class StreamingBackgroundService : Service, AudioManager.IOnAudioFocusChangeListener
     {
         //Commands
         public const string ActionPlay = "com.xamarin.action.PLAY";
         public const string ActionPause = "com.xamarin.action.PAUSE";
         public const string ActionStop = "com.xamarin.action.STOP";
 
-        private string mp3 = @"http://www.montemagno.com/sample.mp3";
+        private const string Mp3 = @"http://www.montemagno.com/sample.mp3";
 
         private MediaPlayer player;
-        //private AudioManager audioManager;
-       // private NotificationManager notificationManager;
+        private AudioManager audioManager;
+        private WifiManager wifiManager;
         private WifiManager.WifiLock wifiLock;
-        private bool paused = false;
+        private bool paused;
 
-        private int notificationId = 1;
+        private const int NotificationId = 1;
 
         /// <summary>
         /// On create simply detect some of our managers
@@ -35,9 +34,8 @@ namespace BackgroundStreamingAudio.Services
         {
             base.OnCreate();
             //Find our audio and notificaton managers
-           // audioManager = (AudioManager)GetSystemService(AudioService);
-            //notificationManager = (NotificationManager) GetSystemService(NotificationService);
-
+            audioManager = (AudioManager)GetSystemService(AudioService);
+            wifiManager = (WifiManager)GetSystemService(WifiService);
         }
 
         /// <summary>
@@ -108,7 +106,15 @@ namespace BackgroundStreamingAudio.Services
                 return;
 
             try {
-                await player.SetDataSourceAsync(ApplicationContext, Android.Net.Uri.Parse(mp3));
+                await player.SetDataSourceAsync(ApplicationContext, Android.Net.Uri.Parse(Mp3));
+                
+                var focusResult = audioManager.RequestAudioFocus(this, Stream.Music, AudioFocus.Gain);
+                if (focusResult != AudioFocusRequest.Granted)
+                {
+                    //could not get audio focus
+                    Console.WriteLine("Could not get audio focus");
+                }
+                
                 player.PrepareAsync();
                 AquireWifiLock();
                 StartForeground();
@@ -138,7 +144,7 @@ namespace BackgroundStreamingAudio.Services
             notification.Flags |= NotificationFlags.OngoingEvent;
             notification.SetLatestEventInfo(ApplicationContext, "Xamarin Streaming",
                             "Playing music!", pendingIntent);
-            StartForeground(notificationId, notification);
+            StartForeground(NotificationId, notification);
         }
 
         private void Pause()
@@ -173,8 +179,7 @@ namespace BackgroundStreamingAudio.Services
         private void AquireWifiLock()
         {
             if (wifiLock == null){
-                var wifiService = (WifiManager) GetSystemService(WifiService);
-                wifiLock = wifiService.CreateWifiLock(WifiMode.Full, "xamarin_wifi_lock");
+                wifiLock = wifiManager.CreateWifiLock(WifiMode.Full, "xamarin_wifi_lock");
             } 
             wifiLock.Acquire();
         }
@@ -201,6 +206,46 @@ namespace BackgroundStreamingAudio.Services
             {
                 player.Release();
                 player = null;
+            }
+        }
+
+        /// <summary>
+        /// For a good user experience we should account for when audio focus has changed.
+        /// There is only 1 audio output ther emay be several media services trying to use it so
+        /// we should act correctly based on this.  "duck" to be quiet and when we gain go full.
+        /// All applications are encouraged to follow this, but are not enforced.
+        /// </summary>
+        /// <param name="focusChange"></param>
+        public void OnAudioFocusChange(AudioFocus focusChange)
+        {
+            switch (focusChange)
+            {
+                case AudioFocus.Gain:
+                    if (player == null)
+                        return;
+
+                    if (!player.IsPlaying)
+                    {
+                        player.Start();
+                        paused = false;
+                    }
+                    
+                    player.SetVolume(1.0f, 1.0f);//Turn it up!
+                    break;
+                case AudioFocus.Loss:
+                    //We have lost focus stop!
+                    Stop();
+                    break;
+                case AudioFocus.LossTransient:
+                    //We have lost focus for a short time, but likely to resume so pause
+                    Pause();
+                    break;
+                case AudioFocus.LossTransientCanDuck:
+                    //We have lost focus but should till play at a muted 10% volume
+                    if(player.IsPlaying)
+                        player.SetVolume(.1f, .1f);//turn it down!
+                    break;
+
             }
         }
     }
