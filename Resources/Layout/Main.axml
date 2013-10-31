@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:background="@color/background"
+    android:padding="8dp">
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:id="@+id/linearLayout1">
+        <Button
+            android:text="@string/play"
+            android:id="@+id/playButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:drawableTop="@drawable/ic_av_play"
+            android:layout_gravity="center_vertical" />
+        <Button
+            android:text="@string/pause"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/pauseButton"
+            android:drawableTop="@drawable/ic_av_pause"
+            android:layout_gravity="center_vertical" />
+        <Button
+            android:text="@string/stop"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/stopButton"
+            android:drawableTop="@drawable/ic_av_stop"
+            android:layout_gravity="center_vertical" />
+    </LinearLayout>
+</LinearLayout>
