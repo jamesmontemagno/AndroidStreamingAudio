@@ -97,21 +97,21 @@ namespace BackgroundStreamingAudio.Services
 		}
 
 		/// <summary>
-		/// Updates the meta data on the lock screen
+		/// Updates the metadata on the lock screen
 		/// </summary>
-		private void UpdateMetaData()
+		private void UpdateMetadata()
 		{
 			if (remoteControlClient == null)
 				return;
 
-			var metaDataEditor = remoteControlClient.EditMetadata(true);
-			metaDataEditor.PutString (MetadataKey.Album, "Fantastique");
-			metaDataEditor.PutString (MetadataKey.Artist, "Raw Stiles");
-			metaDataEditor.PutString (MetadataKey.Albumartist, "Raw Stiles");
-			metaDataEditor.PutString (MetadataKey.Title, "Rogue");
+			var metadataEditor = remoteControlClient.EditMetadata(true);
+			metadataEditor.PutString (MetadataKey.Album, "Fantastique");
+			metadataEditor.PutString (MetadataKey.Artist, "Raw Stiles");
+			metadataEditor.PutString (MetadataKey.Albumartist, "Raw Stiles");
+			metadataEditor.PutString (MetadataKey.Title, "Rogue");
 			var coverArt = BitmapFactory.DecodeResource(Resources, Resource.Drawable.album_art);
-			metaDataEditor.PutBitmap (BitmapKey.Artwork, coverArt);
-			metaDataEditor.Apply ();
+			metadataEditor.PutBitmap (BitmapKey.Artwork, coverArt);
+			metadataEditor.Apply ();
 		}
 
 
@@ -164,7 +164,7 @@ namespace BackgroundStreamingAudio.Services
 			player.Prepared += (sender, args) => {
 				if(remoteControlClient != null)
 					remoteControlClient.SetPlaybackState(RemoteControlPlayState.Playing);
-				UpdateMetaData ();
+				UpdateMetadata ();
 				player.Start ();
 			};
 
@@ -193,7 +193,7 @@ namespace BackgroundStreamingAudio.Services
 				//Update remote client now that we are playing
 				RegisterRemoteClient ();
 				remoteControlClient.SetPlaybackState (RemoteControlPlayState.Playing);
-				UpdateMetaData ();
+				UpdateMetadata ();
                 return;
             }
 
@@ -220,7 +220,7 @@ namespace BackgroundStreamingAudio.Services
 				//Update the remote control client that we are buffering
 				RegisterRemoteClient ();
 				remoteControlClient.SetPlaybackState(RemoteControlPlayState.Buffering);
-				UpdateMetaData();
+				UpdateMetadata();
             }
             catch (Exception ex) {
                 //unable to start playback log error
