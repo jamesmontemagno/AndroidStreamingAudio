@@ -331,35 +331,22 @@ namespace BackgroundStreamingAudio.Services
 
         public async Task PlayNext ()
         {
-            /*if (Queue.HasNext ()) {
-                UpdatePlaybackState(PlaybackStateCompat.StateStopped);
-                mediaPlayer.Reset ();
+            mediaPlayer.Reset ();
 
-                Queue.SetNextAsCurrent ();
-
-                await Play ();
-            } else {
-                // If you don't have a next song in the queue, stop and show the meta-data of the first song.
-                UpdatePlaybackState(PlaybackStateCompat.StateStopped);
-                mediaPlayer.Reset ();
-
-                Queue.SetIndexAsCurrent (0);
-            }*/
+            await Play ();
         }
 
         public async Task PlayPrevious ()
         {
             // Start current track from beginning if it's the first track or the track has played more than 3sec and you hit "playPrevious".
-            /*if (!Queue.HasPrevious () || Position > 3000) {
+            if (Position > 3000) {
                 await Seek (0);
             } else {
                 UpdatePlaybackState(PlaybackStateCompat.StateStopped);
                 mediaPlayer.Reset ();
 
-                Queue.SetPreviousAsCurrent ();
-
                 await Play ();
-            }*/
+            }
         }
 
         public async Task PlayPause ()

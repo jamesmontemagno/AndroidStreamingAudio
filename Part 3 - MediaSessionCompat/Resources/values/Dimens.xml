@@ -8,18 +8,6 @@
     <dimen name="margin_large">32dp</dimen>
     <dimen name="margin_huge">64dp</dimen>
 
-    <!-- Semantic definitions -->
-
-    <dimen name="row_settings_header_height">25dp</dimen>
-    <dimen name="row_navigation_height">45dp</dimen>
-    <dimen name="row_language_height">60dp</dimen>
-    <dimen name="row_document_height">70dp</dimen>
-
-    <dimen name="miniplayer_height">55dp</dimen>
-    <dimen name="miniplayer_button_width">40dp</dimen>
-    <dimen name="button_login_height">60dp</dimen>
-    <dimen name="button_shuffle_height">40dp</dimen>
-
     <dimen name="element_margin_smallest">1dp</dimen>
     <dimen name="element_margin_tinier">3dp</dimen>
     <dimen name="element_margin_tiny">5dp</dimen>
@@ -28,14 +16,7 @@
     <dimen name="element_margin_large">20dp</dimen>
     <dimen name="element_margin_huge">25dp</dimen>
 
-    <dimen name="fragment_player_height">80dp</dimen>
     <dimen name="fragment_player_picture_hight">320dp</dimen>
-
-    <dimen name="navigation_drawer_width">290dp</dimen>
-
-    <dimen name="explore_contributor_cardview_dimen">150dp</dimen>
-
-    <dimen name="album_image_height">276dp</dimen>
 
     <!-- font definitions -->
 
