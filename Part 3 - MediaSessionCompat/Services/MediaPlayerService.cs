@@ -301,8 +301,8 @@ namespace BackgroundStreamingAudio.Services
                 mediaPlayer.PrepareAsync ();
 
                 AquireWifiLock ();
+                UpdateMediaMetadataCompat (metaRetriever);
                 StartNotification ();
-                UpdateMediaMetadataCompat ();
 
                 byte[] imageByteArray = metaRetriever.GetEmbeddedPicture ();
                 if (imageByteArray == null)
@@ -468,7 +468,6 @@ namespace BackgroundStreamingAudio.Services
                     .SetContentIntent (pendingIntent)
                     .SetVisibility (NotificationVisibility.Public)
                     .SetShowWhen(false)
-                    .SetProgress(Duration, Position, false)
                     .SetOngoing (MediaPlayerState == PlaybackStateCompat.StatePlaying);
 
                 builder.AddAction( GenerateAction( Android.Resource.Drawable.IcMediaPrevious, "Previous", ActionPrevious ) );
@@ -479,7 +478,7 @@ namespace BackgroundStreamingAudio.Services
 
                 NotificationManager.FromContext (ApplicationContext).Notify (NotificationId, builder.Build());
             } else {
-                /*NotificationCompat.Builder builder = new NotificationCompat.Builder (ApplicationContext)
+                NotificationCompat.Builder builder = new NotificationCompat.Builder (ApplicationContext)
                     .SetContentTitle (currentTrack.GetString(MediaMetadata.MetadataKeyTitle))
                     .SetContentText (currentTrack.GetString(MediaMetadata.MetadataKeyArtist))
                     .SetContentInfo (currentTrack.GetString(MediaMetadata.MetadataKeyAlbum))
@@ -487,7 +486,6 @@ namespace BackgroundStreamingAudio.Services
                     .SetLargeIcon (Cover as Bitmap)
                     .SetContentIntent (pendingIntent)
                     .SetShowWhen(false)
-                    .SetProgress(Duration, Position, false)
                     .SetOngoing (MediaPlayerState == PlaybackStateCompat.StatePlaying);
 
                 builder.AddAction( GenerateActionCompat( Android.Resource.Drawable.IcMediaPrevious, "Previous", ActionPrevious ) );
@@ -495,7 +493,7 @@ namespace BackgroundStreamingAudio.Services
                 builder.AddAction( GenerateActionCompat( Android.Resource.Drawable.IcMediaNext, "Next", ActionNext ) );
                 builder.AddAction( GenerateActionCompat( Android.Resource.Drawable.IcMenuCloseClearCancel, "Stop", ActionStop ) );
 
-                NotificationManagerCompat.From (ApplicationContext).Notify (NotificationId, builder.Build());*/
+                NotificationManagerCompat.From (ApplicationContext).Notify (NotificationId, builder.Build());
             }
         }
 
