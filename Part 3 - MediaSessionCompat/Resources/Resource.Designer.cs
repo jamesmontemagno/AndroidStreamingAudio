@@ -1453,67 +1453,70 @@ namespace BackgroundStreamingAudio
 			public const int icon_prev_active = 2130837580;
 			
 			// aapt resource value: 0x7f02004d
-			public const int icon_prev_static = 2130837581;
+			public const int icon_prev_inactive = 2130837581;
 			
 			// aapt resource value: 0x7f02004e
-			public const int icon_repeat_active = 2130837582;
+			public const int icon_prev_static = 2130837582;
 			
 			// aapt resource value: 0x7f02004f
-			public const int icon_repeat_static = 2130837583;
+			public const int icon_repeat_active = 2130837583;
 			
 			// aapt resource value: 0x7f020050
-			public const int icon_shuffle_active = 2130837584;
+			public const int icon_repeat_static = 2130837584;
 			
 			// aapt resource value: 0x7f020051
-			public const int icon_shuffle_static = 2130837585;
+			public const int icon_shuffle_active = 2130837585;
 			
 			// aapt resource value: 0x7f020052
-			public const int seekbar_background = 2130837586;
+			public const int icon_shuffle_static = 2130837586;
 			
 			// aapt resource value: 0x7f020053
-			public const int seekbar_control = 2130837587;
+			public const int seekbar_background = 2130837587;
 			
 			// aapt resource value: 0x7f020054
-			public const int seekbar_default = 2130837588;
+			public const int seekbar_control = 2130837588;
 			
 			// aapt resource value: 0x7f020055
-			public const int seekbar_disabled = 2130837589;
+			public const int seekbar_default = 2130837589;
 			
 			// aapt resource value: 0x7f020056
-			public const int seekbar_focused = 2130837590;
+			public const int seekbar_disabled = 2130837590;
 			
 			// aapt resource value: 0x7f020057
-			public const int seekbar_pressed = 2130837591;
+			public const int seekbar_focused = 2130837591;
 			
 			// aapt resource value: 0x7f020058
-			public const int seekbar_primary = 2130837592;
+			public const int seekbar_pressed = 2130837592;
 			
 			// aapt resource value: 0x7f020059
-			public const int seekbar_progress = 2130837593;
+			public const int seekbar_primary = 2130837593;
 			
 			// aapt resource value: 0x7f02005a
-			public const int seekbar_secondary = 2130837594;
+			public const int seekbar_progress = 2130837594;
 			
 			// aapt resource value: 0x7f02005b
-			public const int toggle_repeat = 2130837595;
+			public const int seekbar_secondary = 2130837595;
 			
 			// aapt resource value: 0x7f02005c
-			public const int toggle_repeat_active = 2130837596;
+			public const int toggle_repeat = 2130837596;
 			
 			// aapt resource value: 0x7f02005d
-			public const int toggle_repeat_static = 2130837597;
+			public const int toggle_repeat_active = 2130837597;
 			
 			// aapt resource value: 0x7f02005e
-			public const int toggle_shuffle = 2130837598;
+			public const int toggle_repeat_static = 2130837598;
 			
 			// aapt resource value: 0x7f02005f
-			public const int toggle_shuffle_active = 2130837599;
+			public const int toggle_shuffle = 2130837599;
 			
 			// aapt resource value: 0x7f020060
-			public const int toggle_shuffle_static = 2130837600;
+			public const int toggle_shuffle_active = 2130837600;
 			
 			// aapt resource value: 0x7f020061
-			public const int togglebutton_playpause = 2130837601;
+			public const int toggle_shuffle_static = 2130837601;
+			
+			// aapt resource value: 0x7f020062
+			public const int togglebutton_playpause = 2130837602;
 			
 			static Drawable()
 			{
