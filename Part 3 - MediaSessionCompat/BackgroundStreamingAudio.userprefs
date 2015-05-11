@@ -1,0 +1,17 @@
+﻿<Properties StartupItem="BackgroundStreamingAudio.csproj">
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="Android.AVD_GalaxyNexus_ToolsForApacheCordova" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="Services\MediaPlayerService.cs">
+    <Files>
+      <File FileName="Services\MediaPlayerService.cs" Line="497" Column="66" />
+      <File FileName="MainActivity.cs" Line="47" Column="17" />
+    </Files>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore>
+      <Breakpoint file="/Users/jamesmontemagno/Documents/GitHub/AndroidStreamingAudio/Part 2 - Lock Screen/Services/StreamingBackgroundService.cs" line="334" column="1" />
+      <Breakpoint file="/Users/jamesmontemagno/Documents/GitHub/AndroidStreamingAudio/Part 2 - Lock Screen/Receivers/RemoteControlBroadcastReceiver.cs" line="41" column="1" />
+    </BreakpointStore>
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+  <MonoDevelop.Ide.ItemProperties.BackgroundStreamingAudio AndroidDeviceId-Debug="0146970F1101E008" MonoForAntroid.PreferredDevice="3.7in WVGA (Nexus One)" />
+</Properties>
