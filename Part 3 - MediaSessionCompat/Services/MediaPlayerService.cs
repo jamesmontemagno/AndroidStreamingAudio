@@ -32,13 +32,13 @@ namespace BackgroundStreamingAudio.Services
 
         private const string audioUrl = @"http://www.montemagno.com/sample.mp3";
 
-        private MediaPlayer mediaPlayer;
+        public MediaPlayer mediaPlayer;
         private AudioManager audioManager;
 
         private MediaSessionCompat mediaSessionCompat;
-        private MediaControllerCompat mediaControllerCompat;
+        public MediaControllerCompat mediaControllerCompat;
 
-        private int MediaPlayerState
+        public int MediaPlayerState
         {
             get{
                 return mediaControllerCompat.PlaybackState.State;
@@ -289,7 +289,9 @@ namespace BackgroundStreamingAudio.Services
                 MediaMetadataRetriever metaRetriever = new MediaMetadataRetriever ();
 
                 await mediaPlayer.SetDataSourceAsync (ApplicationContext, Android.Net.Uri.Parse (audioUrl));
-                //await metaRetriever.SetDataSourceAsync(audioUrl);
+
+                //TODO: Find out why this crashes
+                //await metaRetriever.SetDataSourceAsync(ApplicationContext, Android.Net.Uri.Parse (audioUrl));
 
                 var focusResult = audioManager.RequestAudioFocus (this, Stream.Music, AudioFocus.Gain);
                 if (focusResult != AudioFocusRequest.Granted) {

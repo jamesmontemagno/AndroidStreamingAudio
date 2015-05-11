@@ -1,14 +1,25 @@
-﻿using Android.App;
+﻿using System;
+using Android.App;
 using Android.Content;
-using Android.Widget;
 using Android.OS;
+using Android.Support.V4.Media.Session;
+using Android.Support.V7.App;
+using Android.Widget;
 using BackgroundStreamingAudio.Services;
-using System;
+using Toolbar = Android.Support.V7.Widget.Toolbar;
+using Android.Content.PM;
+using Android.Graphics;
+using Android.Media;
 
 namespace BackgroundStreamingAudio
 {
-    [Activity(Label = "BackgroundStreamingAudio", MainLauncher = true, Icon = "@drawable/ic_launcher", Theme = "@style/Theme")]
-    public class MainActivity : Activity
+    [Activity(Label = "BackgroundStreamingAudio", 
+        MainLauncher = true,
+        Theme = "@style/AppTheme",
+        LaunchMode = LaunchMode.SingleTop,
+        ConfigurationChanges = ConfigChanges.Orientation | ConfigChanges.ScreenSize
+    )]
+    public class MainActivity : AppCompatActivity
     {
         bool isBound = false;
         private MediaPlayerServiceBinder binder;
@@ -23,6 +34,11 @@ namespace BackgroundStreamingAudio
 
         public event BufferingEventHandler Buffering;
 
+        public Toolbar Toolbar {
+            get;
+            set;
+        }
+
         protected override void OnCreate(Bundle bundle)
         {
             base.OnCreate(bundle);
@@ -30,29 +46,79 @@ namespace BackgroundStreamingAudio
             // Set our view from the "main" layout resource
             SetContentView(Resource.Layout.Main);
 
-            var play = FindViewById<Button>(Resource.Id.playButton);
-            var pause = FindViewById<Button>(Resource.Id.pauseButton);
-            var stop = FindViewById<Button>(Resource.Id.stopButton);
+            Toolbar = FindViewById<Toolbar>(Resource.Id.toolbar);
+            if (Toolbar != null) {
+                SetSupportActionBar(Toolbar);
+                SupportActionBar.SetDisplayHomeAsUpEnabled(true);
+                SupportActionBar.SetHomeButtonEnabled (true);
+            }
 
             if(mediaPlayerServiceConnection == null)
                 InitilizeMedia();
 
-            play.Click += async (sender, args) => {
-                await binder.GetMediaPlayerService().Play();
+            var previous = FindViewById<ImageButton>(Resource.Id.btnPrevious);
+            previous.Click += async (sender, args) => {
+                if(binder.GetMediaPlayerService().mediaPlayer != null)
+                    await binder.GetMediaPlayerService().PlayPrevious();
             };
-            //pause.Click += (sender, args) => SendAudioCommand(StreamingBackgroundService.ActionPause);
-            //stop.Click += (sender, args) => SendAudioCommand(StreamingBackgroundService.ActionStop);
 
-			var musicBy = FindViewById<TextView> (Resource.Id.musicbytext);
-			musicBy.Clickable = true;
-			musicBy.Click += (sender, e) => {
-                
+            var playpause = FindViewById<Button>(Resource.Id.btnPlayPause);
+            playpause.Click += async (sender, args) => {
+                if(binder.GetMediaPlayerService().mediaPlayer != null && binder.GetMediaPlayerService().MediaPlayerState == PlaybackStateCompat.StatePlaying)
+                    await binder.GetMediaPlayerService().Pause();
+                else
+                    await binder.GetMediaPlayerService().Play();
+            };
 
-				/*var musicByIntent = new Intent(Intent.ActionView);
-				musicByIntent.SetData(Android.Net.Uri.Parse("http://freemusicarchive.org/music/Raw_Stiles/STOP_2X2_04/A2_Raw_Stiles_-_Rouge_1291"));
-				StartActivity(musicByIntent);*/
-			};
+            var next = FindViewById<ImageButton>(Resource.Id.btnNext);
+            next.Click += async (sender, args) => {
+                if(binder.GetMediaPlayerService().mediaPlayer != null)
+                    await binder.GetMediaPlayerService().PlayNext();
+            };
 
+            var position = FindViewById<TextView>(Resource.Id.textview_position);
+            var duration = FindViewById<TextView>(Resource.Id.textview_duration);
+            var seekbar = FindViewById<SeekBar>(Resource.Id.player_seekbar);
+            Playing += (object sender, EventArgs e) => {
+                seekbar.Max = binder.GetMediaPlayerService().Duration;
+                seekbar.Progress = binder.GetMediaPlayerService().Position;
+
+                position.Text = GetFormattedTime(binder.GetMediaPlayerService().Position);
+                duration.Text = GetFormattedTime(binder.GetMediaPlayerService().Duration);
+            };
+
+            Buffering += (object sender, EventArgs e) => {
+                seekbar.SecondaryProgress = binder.GetMediaPlayerService().Buffered;
+            };
+
+            CoverReloaded += (object sender, EventArgs e) => {
+                var cover = FindViewById<ImageView>(Resource.Id.imageview_cover);
+                cover.SetImageBitmap(binder.GetMediaPlayerService().Cover as Bitmap);
+            };
+
+            var title = FindViewById<TextView>(Resource.Id.textview_title);
+            var subtitle = FindViewById<TextView>(Resource.Id.textview_subtitle);
+            StatusChanged += (object sender, EventArgs e) => {
+                var metadata = binder.GetMediaPlayerService().mediaControllerCompat.Metadata;
+                if(metadata != null)
+                {
+                    title.Text = metadata.GetString(MediaMetadata.MetadataKeyTitle);
+                    subtitle.Text = metadata.GetString(MediaMetadata.MetadataKeyArtist);
+                }
+            };
+        }
+
+        private string GetFormattedTime(int value)
+        {
+            var span = TimeSpan.FromMilliseconds(value);
+            if (span.Hours > 0)
+            {
+                return string.Format("{0}:{1:00}:{2:00}", (int)span.TotalHours, span.Minutes, span.Seconds);
+            }
+            else
+            {
+                return string.Format("{0}:{1:00}", (int)span.Minutes, span.Seconds);
+            }
         }
 
         private void InitilizeMedia()
@@ -60,12 +126,6 @@ namespace BackgroundStreamingAudio
             mediaPlayerServiceIntent = new Intent(ApplicationContext, typeof(MediaPlayerService));
             mediaPlayerServiceConnection = new MediaPlayerServiceConnection (this);
             BindService (mediaPlayerServiceIntent, mediaPlayerServiceConnection, Bind.AutoCreate);
-        }
-
-        private void SendAudioCommand(string action)
-        {
-            var intent = new Intent(action);
-            StartService(intent);
         }
 
         class MediaPlayerServiceConnection : Java.Lang.Object, IServiceConnection

@@ -64,63 +64,54 @@
     <AndroidResource Include="Resources\layout\Main.axml" />
     <AndroidResource Include="Resources\drawable\album_art.jpg" />
     <None Include="packages.config" />
+    <AndroidResource Include="Resources\values\Dimens.xml" />
+    <AndroidResource Include="Resources\values-v21\Styles.xml" />
+    <AndroidResource Include="Resources\drawable-hdpi\icon_next_static.png" />
+    <AndroidResource Include="Resources\drawable-hdpi\icon_play.png" />
+    <AndroidResource Include="Resources\drawable-hdpi\icon_prev_static.png" />
+    <AndroidResource Include="Resources\drawable-hdpi\icon_repeat_active.png" />
+    <AndroidResource Include="Resources\drawable-hdpi\icon_repeat_static.png" />
+    <AndroidResource Include="Resources\drawable-hdpi\icon_shuffle_active.png" />
+    <AndroidResource Include="Resources\drawable-hdpi\icon_shuffle_static.png" />
+    <AndroidResource Include="Resources\drawable-hdpi\seekbar_background.9.png" />
+    <AndroidResource Include="Resources\drawable-hdpi\seekbar_default.png" />
+    <AndroidResource Include="Resources\drawable-hdpi\seekbar_disabled.png" />
+    <AndroidResource Include="Resources\drawable-hdpi\seekbar_focused.png" />
+    <AndroidResource Include="Resources\drawable-hdpi\seekbar_pressed.png" />
+    <AndroidResource Include="Resources\drawable-hdpi\seekbar_primary.9.png" />
+    <AndroidResource Include="Resources\drawable-hdpi\seekbar_secondary.9.png" />
+    <AndroidResource Include="Resources\drawable\button_next.xml" />
+    <AndroidResource Include="Resources\drawable\button_pause.xml" />
+    <AndroidResource Include="Resources\drawable\button_play.xml" />
+    <AndroidResource Include="Resources\drawable\button_previous.xml" />
+    <AndroidResource Include="Resources\drawable\button_resume.xml" />
+    <AndroidResource Include="Resources\drawable\button_shuffleplay.xml" />
+    <AndroidResource Include="Resources\drawable\seekbar_control.xml" />
+    <AndroidResource Include="Resources\drawable\seekbar_progress.xml" />
+    <AndroidResource Include="Resources\drawable\toggle_repeat.xml" />
+    <AndroidResource Include="Resources\drawable\toggle_shuffle.xml" />
+    <AndroidResource Include="Resources\drawable\togglebutton_playpause.xml" />
+    <AndroidResource Include="Resources\drawable-hdpi\btn_pause_static.png" />
+    <AndroidResource Include="Resources\drawable-hdpi\btn_play_active.png" />
+    <AndroidResource Include="Resources\drawable-hdpi\btn_play_static.png" />
+    <AndroidResource Include="Resources\drawable-hdpi\btn_pause_active.png" />
+    <AndroidResource Include="Resources\drawable\button_option.xml" />
+    <AndroidResource Include="Resources\drawable-hdpi\icon_next_active.png" />
+    <AndroidResource Include="Resources\drawable-hdpi\icon_prev_active.png" />
+    <AndroidResource Include="Resources\drawable\toggle_repeat_active.xml" />
+    <AndroidResource Include="Resources\drawable\toggle_repeat_static.xml" />
+    <AndroidResource Include="Resources\drawable\toggle_shuffle_active.xml" />
+    <AndroidResource Include="Resources\drawable\toggle_shuffle_static.xml" />
+    <AndroidResource Include="Resources\drawable-hdpi\icon_options_active.png" />
+    <AndroidResource Include="Resources\drawable-hdpi\icon_options_static.png" />
   </ItemGroup>
   <ItemGroup>
     <AndroidResource Include="Resources\values\Strings.xml" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Properties\AndroidManifest.xml" />
-    <AndroidResource Include="Resources\drawable\background_card.9.png" />
-    <AndroidResource Include="Resources\drawable-hdpi\ic_av_fast_forward.png" />
-    <AndroidResource Include="Resources\drawable-hdpi\ic_av_next.png" />
-    <AndroidResource Include="Resources\drawable-hdpi\ic_av_pause.png" />
-    <AndroidResource Include="Resources\drawable-hdpi\ic_av_play.png" />
-    <AndroidResource Include="Resources\drawable-hdpi\ic_av_previous.png" />
-    <AndroidResource Include="Resources\drawable-hdpi\ic_av_repeat.png" />
-    <AndroidResource Include="Resources\drawable-hdpi\ic_av_rewind.png" />
-    <AndroidResource Include="Resources\drawable-hdpi\ic_av_shuffle.png" />
-    <AndroidResource Include="Resources\drawable-hdpi\ic_av_stop.png" />
-    <AndroidResource Include="Resources\drawable-hdpi\ic_launcher.png" />
-    <AndroidResource Include="Resources\drawable-mdpi\ic_av_fast_forward.png" />
-    <AndroidResource Include="Resources\drawable-mdpi\ic_av_next.png" />
-    <AndroidResource Include="Resources\drawable-mdpi\ic_av_pause.png" />
-    <AndroidResource Include="Resources\drawable-mdpi\ic_av_play.png" />
-    <AndroidResource Include="Resources\drawable-mdpi\ic_av_previous.png" />
-    <AndroidResource Include="Resources\drawable-mdpi\ic_av_repeat.png" />
-    <AndroidResource Include="Resources\drawable-mdpi\ic_av_rewind.png" />
-    <AndroidResource Include="Resources\drawable-mdpi\ic_av_shuffle.png" />
-    <AndroidResource Include="Resources\drawable-mdpi\ic_av_stop.png" />
-    <AndroidResource Include="Resources\drawable-mdpi\ic_launcher.png" />
-    <AndroidResource Include="Resources\drawable-xhdpi\ic_av_fast_forward.png" />
-    <AndroidResource Include="Resources\drawable-xhdpi\ic_av_next.png" />
-    <AndroidResource Include="Resources\drawable-xhdpi\ic_av_pause.png" />
-    <AndroidResource Include="Resources\drawable-xhdpi\ic_av_play.png" />
-    <AndroidResource Include="Resources\drawable-xhdpi\ic_av_previous.png" />
-    <AndroidResource Include="Resources\drawable-xhdpi\ic_av_repeat.png" />
-    <AndroidResource Include="Resources\drawable-xhdpi\ic_av_rewind.png" />
-    <AndroidResource Include="Resources\drawable-xhdpi\ic_av_shuffle.png" />
-    <AndroidResource Include="Resources\drawable-xhdpi\ic_av_stop.png" />
-    <AndroidResource Include="Resources\drawable-xhdpi\ic_launcher.png" />
-    <AndroidResource Include="Resources\drawable-xxhdpi\ic_av_fast_forward.png" />
-    <AndroidResource Include="Resources\drawable-xxhdpi\ic_av_next.png" />
-    <AndroidResource Include="Resources\drawable-xxhdpi\ic_av_pause.png" />
-    <AndroidResource Include="Resources\drawable-xxhdpi\ic_av_play.png" />
-    <AndroidResource Include="Resources\drawable-xxhdpi\ic_av_previous.png" />
-    <AndroidResource Include="Resources\drawable-xxhdpi\ic_av_repeat.png" />
-    <AndroidResource Include="Resources\drawable-xxhdpi\ic_av_rewind.png" />
-    <AndroidResource Include="Resources\drawable-xxhdpi\ic_av_shuffle.png" />
-    <AndroidResource Include="Resources\drawable-xxhdpi\ic_av_stop.png" />
-    <AndroidResource Include="Resources\drawable-xxhdpi\ic_launcher.png" />
     <AndroidResource Include="Resources\values\Styles.xml" />
     <AndroidResource Include="Resources\values\Colors.xml" />
-    <AndroidResource Include="Resources\drawable-xxhdpi-v11\ic_stat_av_play_over_video.png" />
-    <AndroidResource Include="Resources\drawable-hdpi-v11\ic_stat_av_play_over_video.png" />
-    <AndroidResource Include="Resources\drawable-mdpi-v11\ic_stat_av_play_over_video.png" />
-    <AndroidResource Include="Resources\drawable-xhdpi-v11\ic_stat_av_play_over_video.png" />
-    <AndroidResource Include="Resources\drawable-hdpi\ic_stat_av_play_over_video.png" />
-    <AndroidResource Include="Resources\drawable-mdpi\ic_stat_av_play_over_video.png" />
-    <AndroidResource Include="Resources\drawable-xhdpi\ic_stat_av_play_over_video.png" />
-    <AndroidResource Include="Resources\drawable-xxhdpi\ic_stat_av_play_over_video.png" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
@@ -130,4 +121,11 @@
   <Target Name="AfterBuild">
   </Target>
   -->
+  <ItemGroup>
+    <Folder Include="Resources\values-v21\" />
+    <Folder Include="Resources\drawable-xxhdpi\" />
+    <Folder Include="Resources\drawable-xhdpi\" />
+    <Folder Include="Resources\drawable-mdpi\" />
+    <Folder Include="Resources\drawable-hdpi\" />
+  </ItemGroup>
 </Project>
