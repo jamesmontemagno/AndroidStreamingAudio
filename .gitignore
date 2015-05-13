@@ -15,6 +15,7 @@ local.properties
 .classpath
 .settings/
 .loadpath
+[Pp]ackages/
 
 # External tool builders
 .externalToolBuilders/
