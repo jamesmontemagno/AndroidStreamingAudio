@@ -10,6 +10,7 @@ using Android.Support.V4.Media.Session;
 using Android.Support.V4.Media;
 using Android.Support.V4.App;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 
 namespace BackgroundStreamingAudio.Services
 {
@@ -141,7 +142,7 @@ namespace BackgroundStreamingAudio.Services
                 }
 
                 mediaSessionCompat.Active = true;
-                mediaSessionCompat.SetCallback (new MediaSessionCallback());
+                mediaSessionCompat.SetCallback (new MediaSessionCallback((MediaPlayerServiceBinder)binder));
 
                 mediaSessionCompat.SetFlags(MediaSessionCompat.FlagHandlesMediaButtons | MediaSessionCompat.FlagHandlesTransportControls);
             } 
@@ -290,8 +291,7 @@ namespace BackgroundStreamingAudio.Services
 
                 await mediaPlayer.SetDataSourceAsync (ApplicationContext, Android.Net.Uri.Parse (audioUrl));
 
-                //TODO: Find out why this crashes
-                //await metaRetriever.SetDataSourceAsync(ApplicationContext, Android.Net.Uri.Parse (audioUrl));
+                await metaRetriever.SetDataSourceAsync(audioUrl, new Dictionary<string,string>());
 
                 var focusResult = audioManager.RequestAudioFocus (this, Stream.Music, AudioFocus.Gain);
                 if (focusResult != AudioFocusRequest.Granted) {
@@ -312,11 +312,11 @@ namespace BackgroundStreamingAudio.Services
                 else
                     Cover = await BitmapFactory.DecodeByteArrayAsync (imageByteArray, 0, imageByteArray.Length);
             } catch (Exception ex) {
+                UpdatePlaybackState(PlaybackStateCompat.StateStopped);
+
                 mediaPlayer.Reset();
                 mediaPlayer.Release();
                 mediaPlayer = null;
-
-                UpdatePlaybackState(PlaybackStateCompat.StateStopped);
 
                 //unable to start playback log error
                 Console.WriteLine(ex);
@@ -335,9 +335,11 @@ namespace BackgroundStreamingAudio.Services
 
         public async Task PlayNext ()
         {
-            mediaPlayer.Reset();
-            mediaPlayer.Release();
-            mediaPlayer = null;
+            if (mediaPlayer != null) {
+                mediaPlayer.Reset ();
+                mediaPlayer.Release ();
+                mediaPlayer = null;
+            }
 
             UpdatePlaybackState(PlaybackStateCompat.StateSkippingToNext);
 
@@ -353,9 +355,11 @@ namespace BackgroundStreamingAudio.Services
             }
             else
             {
-                mediaPlayer.Reset();
-                mediaPlayer.Release();
-                mediaPlayer = null;
+                if (mediaPlayer != null) {
+                    mediaPlayer.Reset ();
+                    mediaPlayer.Release ();
+                    mediaPlayer = null;
+                }
 
                 UpdatePlaybackState(PlaybackStateCompat.StateSkippingToPrevious);
 
@@ -363,12 +367,15 @@ namespace BackgroundStreamingAudio.Services
             }
         }
 
-        public async Task PlayPause ()
+        public async Task PlayPause()
         {
-            if (MediaPlayerState == PlaybackStateCompat.StatePaused) {
-                await Play ();
-            } else {
-                await Pause ();
+            if (mediaPlayer == null || (mediaPlayer != null && MediaPlayerState == PlaybackStateCompat.StatePaused))
+            {
+                await Play();
+            }
+            else
+            {
+                await Pause();
             }
         }
 
@@ -530,6 +537,11 @@ namespace BackgroundStreamingAudio.Services
                 .PutString (MediaMetadata.MetadataKeyAlbum, metaRetriever.ExtractMetadata (MetadataKey.Album))
                 .PutString (MediaMetadata.MetadataKeyArtist, metaRetriever.ExtractMetadata (MetadataKey.Artist))
                 .PutString (MediaMetadata.MetadataKeyTitle, metaRetriever.ExtractMetadata (MetadataKey.Title));
+            } else {
+                builder
+                    .PutString (MediaMetadata.MetadataKeyAlbum, mediaSessionCompat.Controller.Metadata.GetString (MediaMetadata.MetadataKeyAlbum))
+                    .PutString (MediaMetadata.MetadataKeyArtist, mediaSessionCompat.Controller.Metadata.GetString (MediaMetadata.MetadataKeyArtist))
+                    .PutString (MediaMetadata.MetadataKeyTitle, mediaSessionCompat.Controller.Metadata.GetString (MediaMetadata.MetadataKeyTitle));
             }
             builder.PutBitmap (MediaMetadata.MetadataKeyAlbumArt, Cover as Bitmap);
 
@@ -664,14 +676,41 @@ namespace BackgroundStreamingAudio.Services
         }
 
         public class MediaSessionCallback : MediaSessionCompat.Callback {
+
+            private MediaPlayerServiceBinder mediaPlayerService;
+            public MediaSessionCallback (MediaPlayerServiceBinder service)
+            {
+                mediaPlayerService = service;
+            }
+
             public override void OnPause ()
             {
+                mediaPlayerService.GetMediaPlayerService().Pause();
                 base.OnPause ();
             }
 
             public override void OnPlay ()
             {
+                mediaPlayerService.GetMediaPlayerService().Play();
                 base.OnPlay ();
+            }
+
+            public override void OnSkipToNext()
+            {
+                mediaPlayerService.GetMediaPlayerService().PlayNext();
+                base.OnSkipToNext();
+            }
+
+            public override void OnSkipToPrevious()
+            {
+                mediaPlayerService.GetMediaPlayerService().PlayPrevious();
+                base.OnSkipToPrevious();
+            }
+
+            public override void OnStop()
+            {
+                mediaPlayerService.GetMediaPlayerService().Stop();
+                base.OnStop();
             }
         }
     }
