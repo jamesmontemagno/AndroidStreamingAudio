@@ -10,6 +10,7 @@ using Android.Support.V4.Media.Session;
 using Android.Support.V4.Media;
 using Android.Support.V4.App;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 
 namespace BackgroundStreamingAudio.Services
 {
@@ -141,7 +142,7 @@ namespace BackgroundStreamingAudio.Services
                 }
 
                 mediaSessionCompat.Active = true;
-                mediaSessionCompat.SetCallback (new MediaSessionCallback());
+                mediaSessionCompat.SetCallback (new MediaSessionCallback((MediaPlayerServiceBinder)binder));
 
                 mediaSessionCompat.SetFlags(MediaSessionCompat.FlagHandlesMediaButtons | MediaSessionCompat.FlagHandlesTransportControls);
             } 
@@ -189,9 +190,9 @@ namespace BackgroundStreamingAudio.Services
 
         public bool OnError (MediaPlayer mp, MediaError what, int extra)
         {
-            Stop ();
+            
             UpdatePlaybackState(PlaybackStateCompat.StateError);
-
+			Stop ();
             return true;
         }
 
@@ -290,8 +291,7 @@ namespace BackgroundStreamingAudio.Services
 
                 await mediaPlayer.SetDataSourceAsync (ApplicationContext, Android.Net.Uri.Parse (audioUrl));
 
-                //TODO: Find out why this crashes
-                //await metaRetriever.SetDataSourceAsync(ApplicationContext, Android.Net.Uri.Parse (audioUrl));
+                await metaRetriever.SetDataSourceAsync(audioUrl, new Dictionary<string,string>());
 
                 var focusResult = audioManager.RequestAudioFocus (this, Stream.Music, AudioFocus.Gain);
                 if (focusResult != AudioFocusRequest.Granted) {
@@ -303,7 +303,7 @@ namespace BackgroundStreamingAudio.Services
                 mediaPlayer.PrepareAsync ();
 
                 AquireWifiLock ();
-                UpdateMediaMetadataCompat (metaRetriever);
+				UpdateMediaMetadataCompat (metaRetriever);
                 StartNotification ();
 
                 byte[] imageByteArray = metaRetriever.GetEmbeddedPicture ();
@@ -313,6 +313,10 @@ namespace BackgroundStreamingAudio.Services
                     Cover = await BitmapFactory.DecodeByteArrayAsync (imageByteArray, 0, imageByteArray.Length);
             } catch (Exception ex) {
                 UpdatePlaybackState(PlaybackStateCompat.StateStopped);
+
+                mediaPlayer.Reset();
+                mediaPlayer.Release();
+                mediaPlayer = null;
 
                 //unable to start playback log error
                 Console.WriteLine(ex);
@@ -331,30 +335,47 @@ namespace BackgroundStreamingAudio.Services
 
         public async Task PlayNext ()
         {
-            mediaPlayer.Reset ();
+            if (mediaPlayer != null) {
+                mediaPlayer.Reset ();
+                mediaPlayer.Release ();
+                mediaPlayer = null;
+            }
 
-            await Play ();
+            UpdatePlaybackState(PlaybackStateCompat.StateSkippingToNext);
+
+            await Play();
         }
 
         public async Task PlayPrevious ()
         {
             // Start current track from beginning if it's the first track or the track has played more than 3sec and you hit "playPrevious".
-            if (Position > 3000) {
-                await Seek (0);
-            } else {
-                UpdatePlaybackState(PlaybackStateCompat.StateStopped);
-                mediaPlayer.Reset ();
+            if (Position > 3000)
+            {
+                await Seek(0);
+            }
+            else
+            {
+                if (mediaPlayer != null) {
+                    mediaPlayer.Reset ();
+                    mediaPlayer.Release ();
+                    mediaPlayer = null;
+                }
 
-                await Play ();
+                UpdatePlaybackState(PlaybackStateCompat.StateSkippingToPrevious);
+
+                await Play();
             }
         }
 
-        public async Task PlayPause ()
+        public async Task PlayPause()
         {
-            if (MediaPlayerState == PlaybackStateCompat.StatePaused) {
-                await Play ();
-            } else {
-                await Pause ();
+            if (mediaPlayer == null || (mediaPlayer != null && MediaPlayerState == PlaybackStateCompat.StatePaused))
+            {
+                await Play();
+            }
+            else
+            {
+                await Pause();
             }
         }
 
@@ -440,101 +461,65 @@ namespace BackgroundStreamingAudio.Services
             if (mediaSessionCompat == null)
                 return;
 
-            var pendingIntent = PendingIntent.GetActivity (ApplicationContext, 0, new Intent (ApplicationContext, typeof(MainActivity)), PendingIntentFlags.UpdateCurrent);
+            var pendingIntent = PendingIntent.GetActivity(ApplicationContext, 0, new Intent(ApplicationContext, typeof(MainActivity)), PendingIntentFlags.UpdateCurrent);
             MediaMetadataCompat currentTrack = mediaControllerCompat.Metadata;
 
-            if (Build.VERSION.SdkInt >= BuildVersionCodes.Lollipop) {
-                Notification.MediaStyle style = new Notification.MediaStyle();
-                style.SetMediaSession ((Android.Media.Session.MediaSession.Token)mediaSessionCompat.SessionToken.GetToken ());
+            Android.Support.V7.App.NotificationCompat.MediaStyle style = new Android.Support.V7.App.NotificationCompat.MediaStyle();
+            style.SetMediaSession(mediaSessionCompat.SessionToken);
 
-                Notification.Builder builder = new Notification.Builder (ApplicationContext)
-                    .SetStyle (style)
-                    .SetContentTitle (currentTrack.GetString(MediaMetadata.MetadataKeyTitle))
-                    .SetContentText (currentTrack.GetString(MediaMetadata.MetadataKeyArtist))
-                    .SetContentInfo (currentTrack.GetString(MediaMetadata.MetadataKeyAlbum))
-                    .SetSmallIcon (Resource.Drawable.album_art)
-                    .SetLargeIcon (Cover as Bitmap)
-                    .SetContentIntent (pendingIntent)
-                    .SetVisibility (NotificationVisibility.Public)
-                    .SetShowWhen(false)
-                    .SetOngoing (MediaPlayerState == PlaybackStateCompat.StatePlaying);
-
-                builder.AddAction( GenerateAction( Android.Resource.Drawable.IcMediaPrevious, "Previous", ActionPrevious ) );
-                AddPlayPauseAction (builder);
-                builder.AddAction( GenerateAction( Android.Resource.Drawable.IcMediaNext, "Next", ActionNext ) );
-                builder.AddAction( GenerateAction( Android.Resource.Drawable.IcMenuCloseClearCancel, "Stop", ActionStop ) );
-                style.SetShowActionsInCompactView(0,1,2,4);
-
-                NotificationManager.FromContext (ApplicationContext).Notify (NotificationId, builder.Build());
-            } else {
-                NotificationCompat.Builder builder = new NotificationCompat.Builder (ApplicationContext)
-                    .SetContentTitle (currentTrack.GetString(MediaMetadata.MetadataKeyTitle))
-                    .SetContentText (currentTrack.GetString(MediaMetadata.MetadataKeyArtist))
-                    .SetContentInfo (currentTrack.GetString(MediaMetadata.MetadataKeyAlbum))
-                    .SetSmallIcon (Resource.Drawable.album_art)
-                    .SetLargeIcon (Cover as Bitmap)
-                    .SetContentIntent (pendingIntent)
-                    .SetShowWhen(false)
-                    .SetOngoing (MediaPlayerState == PlaybackStateCompat.StatePlaying);
-
-                builder.AddAction( GenerateActionCompat( Android.Resource.Drawable.IcMediaPrevious, "Previous", ActionPrevious ) );
-                AddPlayPauseActionCompat (builder);
-                builder.AddAction( GenerateActionCompat( Android.Resource.Drawable.IcMediaNext, "Next", ActionNext ) );
-                builder.AddAction( GenerateActionCompat( Android.Resource.Drawable.IcMenuCloseClearCancel, "Stop", ActionStop ) );
-
-                NotificationManagerCompat.From (ApplicationContext).Notify (NotificationId, builder.Build());
-            }
-        }
-
-        private Notification.Action GenerateAction( int icon, String title, String intentAction ) {
             Intent intent = new Intent(ApplicationContext, typeof(MediaPlayerService));
-            intent.SetAction( intentAction );
+            intent.SetAction(ActionStop);
+            PendingIntent pendingCancelIntent = PendingIntent.GetService(ApplicationContext, 1, intent, PendingIntentFlags.CancelCurrent);
 
-            PendingIntentFlags flags = PendingIntentFlags.UpdateCurrent;
-            if (intentAction.Equals (ActionStop))
-                flags = PendingIntentFlags.CancelCurrent;
+            style.SetShowCancelButton(true);
+            style.SetCancelButtonIntent(pendingCancelIntent);
 
-            PendingIntent pendingIntent = PendingIntent.GetService(ApplicationContext, 1, intent, flags);
+            NotificationCompat.Builder builder = new NotificationCompat.Builder(ApplicationContext)
+                .SetStyle(style)
+                .SetContentTitle (currentTrack.GetString(MediaMetadata.MetadataKeyTitle))
+                .SetContentText (currentTrack.GetString(MediaMetadata.MetadataKeyArtist))
+                .SetContentInfo (currentTrack.GetString(MediaMetadata.MetadataKeyAlbum))
+                .SetSmallIcon (Resource.Drawable.album_art)
+                .SetLargeIcon (Cover as Bitmap)
+                .SetContentIntent(pendingIntent)
+                .SetShowWhen(false)
+                .SetOngoing(MediaPlayerState == PlaybackStateCompat.StatePlaying)
+                .SetVisibility(NotificationCompat.VisibilityPublic);
 
-            return new Notification.Action.Builder (icon, title, pendingIntent).Build ();
+            builder.AddAction(GenerateActionCompat(Android.Resource.Drawable.IcMediaPrevious, "Previous", ActionPrevious));
+            AddPlayPauseActionCompat(builder);
+            builder.AddAction(GenerateActionCompat(Android.Resource.Drawable.IcMediaNext, "Next", ActionNext));
+            style.SetShowActionsInCompactView(0, 1, 2);
+
+            NotificationManagerCompat.From(ApplicationContext).Notify(NotificationId, builder.Build());
         }
 
-        private NotificationCompat.Action GenerateActionCompat( int icon, String title, String intentAction ) {
-            Intent intent = new Intent(ApplicationContext, typeof(MediaPlayerService));
-            intent.SetAction( intentAction );
-
-            PendingIntentFlags flags = PendingIntentFlags.UpdateCurrent;
-            if (intentAction.Equals (ActionStop))
-                flags = PendingIntentFlags.CancelCurrent;
-
-            PendingIntent pendingIntent = PendingIntent.GetService(ApplicationContext, 1, intent, flags);
-
-            return new NotificationCompat.Action.Builder (icon, title, pendingIntent).Build ();
-        }
-
-        private void AddPlayPauseAction(Notification.Builder builder) {
-            if (MediaPlayerState == PlaybackStateCompat.StatePlaying)
-                builder.AddAction (GenerateAction (Android.Resource.Drawable.IcMediaPause, "Pause", ActionPause));
-            else
-                builder.AddAction (GenerateAction (Android.Resource.Drawable.IcMediaPlay, "Play", ActionPlay));
-        }
-
-        private void AddPlayPauseActionCompat(NotificationCompat.Builder builder) {
-            if (MediaPlayerState == PlaybackStateCompat.StatePlaying)
-                builder.AddAction (GenerateActionCompat (Android.Resource.Drawable.IcMediaPause, "Pause", ActionPause));
-            else
-                builder.AddAction (GenerateActionCompat (Android.Resource.Drawable.IcMediaPlay, "Play", ActionPlay));
-        }
-
-        public void StopNotification ()
+        private NotificationCompat.Action GenerateActionCompat(int icon, String title, String intentAction)
         {
-            if (Build.VERSION.SdkInt >= BuildVersionCodes.Lollipop) {
-                NotificationManager nm = NotificationManager.FromContext (ApplicationContext);
-                nm.CancelAll ();
-            } else {
-                NotificationManagerCompat nm = NotificationManagerCompat.From (ApplicationContext);
-                nm.CancelAll ();
-            }
+            Intent intent = new Intent(ApplicationContext, typeof(MediaPlayerService));
+            intent.SetAction(intentAction);
+
+            PendingIntentFlags flags = PendingIntentFlags.UpdateCurrent;
+            if (intentAction.Equals(ActionStop))
+                flags = PendingIntentFlags.CancelCurrent;
+
+            PendingIntent pendingIntent = PendingIntent.GetService(ApplicationContext, 1, intent, flags);
+
+            return new NotificationCompat.Action.Builder(icon, title, pendingIntent).Build();
+        }
+
+        private void AddPlayPauseActionCompat(NotificationCompat.Builder builder)
+        {
+            if (MediaPlayerState == PlaybackStateCompat.StatePlaying)
+                builder.AddAction(GenerateActionCompat(Android.Resource.Drawable.IcMediaPause, "Pause", ActionPause));
+            else
+                builder.AddAction(GenerateActionCompat(Android.Resource.Drawable.IcMediaPlay, "Play", ActionPlay));
+        }
+
+        public void StopNotification()
+        {
+            NotificationManagerCompat nm = NotificationManagerCompat.From(ApplicationContext);
+            nm.CancelAll();
         }
 
         /// <summary>
@@ -552,6 +537,11 @@ namespace BackgroundStreamingAudio.Services
                 .PutString (MediaMetadata.MetadataKeyAlbum, metaRetriever.ExtractMetadata (MetadataKey.Album))
                 .PutString (MediaMetadata.MetadataKeyArtist, metaRetriever.ExtractMetadata (MetadataKey.Artist))
                 .PutString (MediaMetadata.MetadataKeyTitle, metaRetriever.ExtractMetadata (MetadataKey.Title));
+            } else {
+                builder
+                    .PutString (MediaMetadata.MetadataKeyAlbum, mediaSessionCompat.Controller.Metadata.GetString (MediaMetadata.MetadataKeyAlbum))
+                    .PutString (MediaMetadata.MetadataKeyArtist, mediaSessionCompat.Controller.Metadata.GetString (MediaMetadata.MetadataKeyArtist))
+                    .PutString (MediaMetadata.MetadataKeyTitle, mediaSessionCompat.Controller.Metadata.GetString (MediaMetadata.MetadataKeyTitle));
             }
             builder.PutBitmap (MediaMetadata.MetadataKeyAlbumArt, Cover as Bitmap);
 
@@ -686,14 +676,41 @@ namespace BackgroundStreamingAudio.Services
         }
 
         public class MediaSessionCallback : MediaSessionCompat.Callback {
+
+            private MediaPlayerServiceBinder mediaPlayerService;
+            public MediaSessionCallback (MediaPlayerServiceBinder service)
+            {
+                mediaPlayerService = service;
+            }
+
             public override void OnPause ()
             {
+                mediaPlayerService.GetMediaPlayerService().Pause();
                 base.OnPause ();
             }
 
             public override void OnPlay ()
             {
+                mediaPlayerService.GetMediaPlayerService().Play();
                 base.OnPlay ();
+            }
+
+            public override void OnSkipToNext()
+            {
+                mediaPlayerService.GetMediaPlayerService().PlayNext();
+                base.OnSkipToNext();
+            }
+
+            public override void OnSkipToPrevious()
+            {
+                mediaPlayerService.GetMediaPlayerService().PlayPrevious();
+                base.OnSkipToPrevious();
+            }
+
+            public override void OnStop()
+            {
+                mediaPlayerService.GetMediaPlayerService().Stop();
+                base.OnStop();
             }
         }
     }

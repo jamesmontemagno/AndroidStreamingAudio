@@ -102,8 +102,11 @@ namespace BackgroundStreamingAudio
                 var metadata = binder.GetMediaPlayerService().mediaControllerCompat.Metadata;
                 if(metadata != null)
                 {
-                    title.Text = metadata.GetString(MediaMetadata.MetadataKeyTitle);
-                    subtitle.Text = metadata.GetString(MediaMetadata.MetadataKeyArtist);
+                    RunOnUiThread(() => {
+                        title.Text = metadata.GetString(MediaMetadata.MetadataKeyTitle);
+                        subtitle.Text = metadata.GetString(MediaMetadata.MetadataKeyArtist);
+                        playpause.Selected = binder.GetMediaPlayerService().mediaControllerCompat.PlaybackState.State == PlaybackStateCompat.StatePlaying;
+                    });
                 }
             };
         }
