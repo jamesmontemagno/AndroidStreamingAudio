@@ -411,44 +411,54 @@ namespace BackgroundStreamingAudio.Services
             });
         }
 
-        private void UpdatePlaybackState(int state) {
-
+        private void UpdatePlaybackState(int state)
+        {
             if (mediaSessionCompat == null || mediaPlayer == null)
                 return;
 
             try
             {
                 PlaybackStateCompat.Builder stateBuilder = new PlaybackStateCompat.Builder()
-                    .SetActions(PlaybackStateCompat.ActionPlay 
-                        | PlaybackStateCompat.ActionPlayPause
-                        | PlaybackStateCompat.ActionPause 
-                        | PlaybackStateCompat.ActionStop);
-
-                stateBuilder.SetState(state, mediaPlayer.CurrentPosition, 0, SystemClock.ElapsedRealtime());
+                    .SetActions(
+                        PlaybackStateCompat.ActionPause |
+                        PlaybackStateCompat.ActionPlay |
+                        PlaybackStateCompat.ActionPlayPause |
+                        PlaybackStateCompat.ActionSkipToNext |
+                        PlaybackStateCompat.ActionSkipToPrevious |
+                        PlaybackStateCompat.ActionStop
+                    )
+                    .SetState(state, Position, 1.0f, SystemClock.ElapsedRealtime());
 
                 mediaSessionCompat.SetPlaybackState(stateBuilder.Build());
 
                 //Used for backwards compatibility
-                if (Build.VERSION.SdkInt < BuildVersionCodes.Lollipop) {
-                    if (mediaSessionCompat.RemoteControlClient != null && mediaSessionCompat.RemoteControlClient.Equals(typeof(RemoteControlClient))) {
-                        RemoteControlClient remoteControlClient = (RemoteControlClient) mediaSessionCompat.RemoteControlClient;
+                if (Build.VERSION.SdkInt < BuildVersionCodes.Lollipop)
+                {
+                    if (mediaSessionCompat.RemoteControlClient != null && mediaSessionCompat.RemoteControlClient.Equals(typeof(RemoteControlClient)))
+                    {
+                        RemoteControlClient remoteControlClient = (RemoteControlClient)mediaSessionCompat.RemoteControlClient;
 
                         RemoteControlFlags flags = RemoteControlFlags.Play
                             | RemoteControlFlags.Pause
-                            | RemoteControlFlags.PlayPause;
+                            | RemoteControlFlags.PlayPause
+                            | RemoteControlFlags.Previous
+                            | RemoteControlFlags.Next
+                            | RemoteControlFlags.Stop;
 
                         remoteControlClient.SetTransportControlFlags(flags);
                     }
                 }
 
-                OnStatusChanged (EventArgs.Empty);
+                OnStatusChanged(EventArgs.Empty);
 
-                if (state == PlaybackStateCompat.StatePlaying || state == PlaybackStateCompat.StatePaused) {
-                    StartNotification ();
+                if (state == PlaybackStateCompat.StatePlaying || state == PlaybackStateCompat.StatePaused)
+                {
+                    StartNotification();
                 }
             }
-            catch (Exception ex){
-                Console.WriteLine(ex);
+            catch (Exception ex)
+            {
+                Console.WriteLine (ex);
             }
         }
 
@@ -599,9 +609,13 @@ namespace BackgroundStreamingAudio.Services
 
         private void UnregisterMediaSessionCompat ()
         {
-            try {
-                mediaSessionCompat.Dispose ();
-                mediaSessionCompat = null;
+            try
+            {
+                if(mediaSessionCompat != null)
+                {
+                    mediaSessionCompat.Dispose();
+                    mediaSessionCompat = null;
+                }
             } catch (Exception ex) {
                 Console.WriteLine (ex);
             }
