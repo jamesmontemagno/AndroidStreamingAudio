@@ -39,12 +39,15 @@ namespace BackgroundStreamingAudio.Services
         private MediaSessionCompat mediaSessionCompat;
         public MediaControllerCompat mediaControllerCompat;
 
-        public int MediaPlayerState
-        {
-            get{
-                return mediaControllerCompat.PlaybackState.State;
-            }
-        }
+		public int MediaPlayerState
+		{
+			get{
+				return (mediaControllerCompat.PlaybackState != null ? 
+					mediaControllerCompat.PlaybackState.State: 
+					PlaybackStateCompat.StateNone);
+			}
+		}
+
 
         private WifiManager wifiManager;
         private WifiManager.WifiLock wifiLock;
